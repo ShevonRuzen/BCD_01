@@ -12,6 +12,10 @@ public class User {
 
     }
 
+    public User(String name, String mobile, String email, String password) {
+
+    }
+
     public String getMobile() {
         return mobile;
     }

@@ -32,7 +32,15 @@ public class SignUp extends HttpServlet {
         }
 
         if (!name.isEmpty() && !mobile.isEmpty() && !email.isEmpty() && !password.isEmpty()) {
+            for(User user : users) {
+                resp.getWriter().write(email + "is already in use");
+            }
 
+            User user = new User(name, mobile, email, password);
+            users.add(user);
+
+        } else {
+            resp.getWriter().write("Please enter the name of the user");
         }
 
     }

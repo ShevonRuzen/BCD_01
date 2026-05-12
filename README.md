@@ -10,5 +10,6 @@ This repository contains practical exercises for Business Component Development 
 ## Getting Started
 
 1. Ensure you have Java and Maven installed.
-2. Use IntelliJ IDE to open the Maven projects.
-3. Start the Payara Server for deployment and testing.
+2. Ensure you have Downloaded payara-6.2025.11 to Project directory.
+3. Use IntelliJ IDE to open the Maven projects.
+4. Start the Payara Server for deployment and testing.
