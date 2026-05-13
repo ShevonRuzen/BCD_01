@@ -1,27 +1,22 @@
-
 package lk.jiat.bcd.model;
 
 public class User {
 
     private String name;
     private String mobile;
+
     private String email;
     private String password;
 
+    public User(String name, String mobile, String email, String password) {
+        this.name = name;
+        this.mobile = mobile;
+        this.email = email;
+        this.password = password;
+    }
+
     public User() {
 
-    }
-
-    public User(String name, String mobile, String email, String password) {
-
-    }
-
-    public String getMobile() {
-        return mobile;
-    }
-
-    public void setMobile(String mobile) {
-        this.mobile = mobile;
     }
 
     public String getName() {
@@ -30,6 +25,14 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
     }
 
     public String getEmail() {
@@ -47,6 +50,4 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-
-
 }

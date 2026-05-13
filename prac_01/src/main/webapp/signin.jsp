@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Create Account</title>
+    <title>Sign In</title>
     <style>
         :root {
             --primary-color: #4f46e5;
@@ -22,13 +22,13 @@
             margin: 0;
         }
 
-        .signup-container {
+        .signin-container {
             background: #ffffff;
-            padding: 2rem;
+            padding: 2.5rem;
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 380px;
         }
 
         h2 {
@@ -36,6 +36,14 @@
             color: var(--text-main);
             text-align: center;
             font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
         }
 
         .form-group {
@@ -55,14 +63,27 @@
             padding: 0.75rem;
             border: 1px solid #d1d5db;
             border-radius: 6px;
-            box-sizing: border-box; /* Ensures padding doesn't affect width */
-            transition: border-color 0.2s;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
         }
 
         input:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .flex-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .forgot-password {
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            text-decoration: none;
         }
 
         button {
@@ -76,7 +97,6 @@
             font-weight: 600;
             cursor: pointer;
             transition: background 0.2s;
-            margin-top: 1rem;
         }
 
         button:hover {
@@ -93,28 +113,20 @@
         .footer-text a {
             color: var(--primary-color);
             text-decoration: none;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
 
-<div class="signup-container">
-    <h2>Sign Up</h2>
+<div class="signin-container">
+    <h2>Welcome Back</h2>
+    <p class="subtitle">Please enter your details</p>
 
-    <form action="signup" method="post">
-        <div class="form-group">
-            <label for="name">Full Name</label>
-            <input type="text" id="name" name="name" placeholder="Enter your name" required>
-        </div>
-
+    <form action="signin" method="post">
         <div class="form-group">
             <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" placeholder="you@example.com" required>
-        </div>
-
-        <div class="form-group">
-            <label for="mobile">Mobile Number</label>
-            <input type="tel" id="mobile" name="mobile" placeholder="123-456-7890" required>
+            <input type="email" id="email" name="email" placeholder="Enter your email" required>
         </div>
 
         <div class="form-group">
@@ -122,11 +134,19 @@
             <input type="password" id="password" name="password" placeholder="••••••••" required>
         </div>
 
-        <button type="submit">Create Account</button>
+        <div class="flex-row">
+            <div style="display: flex; align-items: center;">
+                <input type="checkbox" id="remember" style="width: auto; margin-right: 8px;">
+                <label for="remember" style="margin-bottom: 0; font-size: 0.85rem; cursor: pointer;">Remember me</label>
+            </div>
+            <a href="#" class="forgot-password">Forgot password?</a>
+        </div>
+
+        <button type="submit">Sign In</button>
     </form>
 
     <div class="footer-text">
-        Already have an account? <a href="siginin.jsp">Log in</a>
+        Don't have an account? <a href="signup.jsp">Sign up for free</a>
     </div>
 </div>
 
