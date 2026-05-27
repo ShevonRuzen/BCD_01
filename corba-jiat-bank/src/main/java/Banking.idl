@@ -1,0 +1,13 @@
+module BankingApp {
+
+    exception InsufficientBalance {
+        string msg;
+    };
+
+    interface Account {
+        double getBalance(in string accNo);
+        void deposit(in string accNo, in double amount);
+        void withdraw(in string accNo, in double amount) raises (InsufficientBalance);
+    };
+
+};
