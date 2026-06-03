@@ -1,3 +1,5 @@
+//  COUNT RMIServer & RMIClient projects as a SINGLE Practical
+
 package lk.jiat.rmi;
 
 import lk.jiat.rmi.client.Message;
