@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile – TechMart</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .profile-card {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: end;
+            margin-bottom: 14px;
+        }
+        .field-row label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            color: var(--muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .field-row input {
+            width: 100%;
+        }
+        .edit-btn {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            min-width: 70px;
+        }
+        .address-required-banner {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+            border-left: 5px solid #f59e0b;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            color: #92400e;
+            font-weight: 600;
+        }
+        .address-required-banner strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>My Profile</h1>
+            <nav>
+                <a href="home.html">Home</a>
+                <a href="products.html">Products</a>
+                <a href="cart.html">Cart</a>
+                <a href="orders.html">My Orders</a>
+                <a href="../logout.html">Logout</a>
+            </nav>
+        </header>
+
+        <div id="addressBanner" class="address-required-banner" style="display:none;">
+            <strong>⚠ Address Required to Order</strong>
+            Your delivery address is not set. Please fill in your address below before you can place orders.
+        </div>
+
+        <section class="card profile-card">
+            <div class="profile-avatar" id="profileAvatar">U</div>
+            <h2 style="margin-bottom:24px;">Account Information</h2>
+
+            <div class="field-row">
+                <div>
+                    <label>Username</label>
+                    <input type="text" id="fieldUsername" placeholder="Your username">
+                </div>
+                <button class="edit-btn" onclick="saveField('username')">Save</button>
+            </div>
+
+            <div class="field-row">
+                <div>
+                    <label>Email Address</label>
+                    <input type="email" id="fieldEmail" disabled placeholder="Your email (cannot be changed here)">
+                </div>
+                <span></span>
+            </div>
+
+            <div class="field-row">
+                <div>
+                    <label>Password</label>
+                    <input type="password" id="fieldPassword" placeholder="Enter new password to change it">
+                </div>
+                <button class="edit-btn" onclick="saveField('password')">Save</button>
+            </div>
+
+            <hr style="border-color:var(--border); margin: 20px 0;">
+
+            <h3 style="margin-bottom: 16px; color:var(--muted); font-size:0.95rem; text-transform:uppercase; letter-spacing:0.05em;">Delivery Information</h3>
+
+            <div class="field-row">
+                <div>
+                    <label>Delivery Address <span style="color:var(--danger);">*</span></label>
+                    <input type="text" id="fieldAddress" placeholder="e.g. No 12, Main Street, Colombo 03">
+                </div>
+                <button class="edit-btn" onclick="saveField('address')">Save</button>
+            </div>
+
+            <div class="field-row">
+                <div>
+                    <label>Telephone Number</label>
+                    <input type="tel" id="fieldTelephone" placeholder="e.g. +94 77 123 4567">
+                </div>
+                <button class="edit-btn" onclick="saveField('telephone')">Save</button>
+            </div>
+
+            <div id="profileMessage" class="message" style="margin-top:16px;"></div>
+        </section>
+    </div>
+
+    <script src="../common.js"></script>
+    <script>
+        let currentUser = null;
+
+        async function loadProfile() {
+            const user = await requireLogin('../login.html');
+            if (!user) return;
+            if (user.role !== 'CUSTOMER') {
+                window.location.href = appPath('login.html');
+                return;
+            }
+            currentUser = user;
+            populateFields(user);
+        }
+
+        function populateFields(user) {
+            document.getElementById('fieldUsername').value = user.username || '';
+            document.getElementById('fieldEmail').value = user.email || '';
+            document.getElementById('fieldPassword').value = '';
+            document.getElementById('fieldAddress').value = user.address || '';
+            document.getElementById('fieldTelephone').value = user.telephone || '';
+
+            const initial = (user.username || user.email || 'U').charAt(0).toUpperCase();
+            document.getElementById('profileAvatar').textContent = initial;
+
+            if (!user.address || user.address.trim() === '') {
+                document.getElementById('addressBanner').style.display = '';
+            } else {
+                document.getElementById('addressBanner').style.display = 'none';
+            }
+        }
+
+        async function saveField(field) {
+            const data = new URLSearchParams();
+
+            if (field === 'username') {
+                const val = document.getElementById('fieldUsername').value.trim();
+                if (!val) { showMessage('profileMessage', 'Username cannot be empty.', true); return; }
+                data.append('username', val);
+            } else if (field === 'password') {
+                const val = document.getElementById('fieldPassword').value.trim();
+                if (!val) { showMessage('profileMessage', 'Password cannot be empty.', true); return; }
+                data.append('password', val);
+            } else if (field === 'address') {
+                data.append('address', document.getElementById('fieldAddress').value.trim());
+            } else if (field === 'telephone') {
+                data.append('telephone', document.getElementById('fieldTelephone').value.trim());
+            }
+
+            // Always send current known values for non-null fields
+            if (field !== 'username') data.append('username', document.getElementById('fieldUsername').value.trim());
+            if (field !== 'address') data.append('address', document.getElementById('fieldAddress').value.trim());
+            if (field !== 'telephone') data.append('telephone', document.getElementById('fieldTelephone').value.trim());
+
+            const resp = await fetch(api('/api/auth/me'), {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: data.toString()
+            });
+            const result = await parseJson(resp);
+            if (!resp.ok || !result.success) {
+                showMessage('profileMessage', result.message || 'Failed to save changes.', true, true);
+                return;
+            }
+            showMessage('profileMessage', 'Saved successfully!', false, true);
+            currentUser = result.user;
+            populateFields(result.user);
+        }
+
+        loadProfile();
+    </script>
+</body>
+</html>

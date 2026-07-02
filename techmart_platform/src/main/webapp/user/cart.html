@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Shopping Cart</h1>
+            <nav>
+                <a href="home.html">Home</a>
+                <a href="products.html">Products</a>
+                <a href="orders.html">My Orders</a>
+                <a href="../logout.html">Logout</a>
+            </nav>
+        </header>
+        <section class="card">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr><th>Product</th><th>Quantity</th><th>Price</th><th>Total</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="cartTable"></tbody>
+                </table>
+            </div>
+            <div class="actions">
+                <button onclick="clearCart()">Clear Cart</button>
+                <button onclick="gotoCheckout()">Checkout</button>
+            </div>
+            <div id="cartMessage" class="message">Loading cart details...</div>
+        </section>
+    </div>
+    <script src="../common.js"></script>
+    <script>
+        async function fetchProductsMap() {
+            const response = await fetch(api('/api/products'));
+            if (!response.ok) return {};
+            const products = await response.json();
+            return products.reduce((map, product) => {
+                map[product.id] = product;
+                return map;
+            }, {});
+        }
+
+        async function loadCart() {
+            const user = await requireLogin('../login.html');
+            if (!user) return;
+            if (user.role !== 'CUSTOMER') {
+                window.location.href = appPath('login.html');
+                return;
+            }
+            const [productMap, cartResp] = await Promise.all([
+                fetchProductsMap(),
+                fetch(api('/api/checkout?action=cart'))
+            ]);
+            const cartBody = cartResp.ok ? await cartResp.json() : {cart:{}};
+            const cart = cartBody.cart || {};
+            const tbody = document.getElementById('cartTable');
+            tbody.innerHTML = '';
+            let total = 0;
+            Object.entries(cart).forEach(([id, qty]) => {
+                const product = productMap[id] || {name: id, price: 0};
+                const lineTotal = product.price * qty;
+                total += lineTotal;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${product.name}</td>
+                    <td><input id="qty-${id}" type="number" min="0" value="${qty}" style="width:90px;"></td>
+                    <td>${formatCurrency(product.price)}</td>
+                    <td>${formatCurrency(lineTotal)}</td>
+                    <td class="inline">
+                        <button class="small" onclick="updateItem('${id}')">Update</button>
+                        <button class="small danger" onclick="removeItem('${id}')">Remove</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            if (Object.keys(cart).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">Your cart is empty.</td></tr>';
+            }
+            const totalRow = document.createElement('tr');
+            totalRow.innerHTML = `<td colspan="3"><strong>Total</strong></td><td colspan="2"><strong>${formatCurrency(total)}</strong></td>`;
+            tbody.appendChild(totalRow);
+            showMessage('cartMessage', Object.keys(cart).length ? 'Cart loaded.' : 'Your cart is empty.');
+        }
+
+        async function removeItem(id) {
+            const response = await fetch(api(`/api/checkout?action=remove&id=${encodeURIComponent(id)}`));
+            const result = await parseJson(response);
+            showMessage('cartMessage', result.message || (response.ok ? 'Item removed.' : 'Failed to remove item.'), !response.ok, true);
+            loadCart();
+        }
+
+        async function updateItem(id) {
+            const input = document.getElementById(`qty-${id}`);
+            const quantity = Math.max(0, Math.floor(Number(input ? input.value : 0) || 0));
+            const response = await fetch(api(`/api/checkout?action=update&id=${encodeURIComponent(id)}&qty=${encodeURIComponent(quantity)}`));
+            const result = await parseJson(response);
+            showMessage('cartMessage', result.message || (response.ok ? 'Cart updated.' : 'Failed to update cart.'), !response.ok || !result.success, true);
+            loadCart();
+        }
+
+        async function clearCart() {
+            const response = await fetch(api('/api/checkout?action=clear'));
+            const result = await parseJson(response);
+            showMessage('cartMessage', result.message || (response.ok ? 'Cart cleared.' : 'Failed to clear cart.'), !response.ok, true);
+            loadCart();
+        }
+
+        function gotoCheckout() {
+            window.location.href = appPath('user/checkout.html');
+        }
+
+        loadCart();
+    </script>
+</body>
+</html>
+
+
+
+
+
+

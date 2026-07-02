@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+
+    <persistence-unit name="TechMartPU" transaction-type="JTA">
+        <jta-data-source>java:app/jdbc/TechMartDS</jta-data-source>
+        <class>com.techmart.model.Product</class>
+        <class>com.techmart.model.Order</class>
+        <class>com.techmart.model.CartItem</class>
+        <class>com.techmart.user.User</class>
+        <properties>
+            <!-- Keep existing database tables and schema across deployments -->
+            <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
+            <property name="jakarta.persistence.jdbc.query.timeout" value="5000"/>
+            <!-- EclipseLink SQL logging for diagnosing update failures -->
+            <property name="eclipselink.logging.level.sql" value="FINE"/>
+            <property name="eclipselink.logging.parameters" value="true"/>
+
+            <!-- Connection Pool Tuning -->
+            <property name="eclipselink.connection-pool.default.initial" value="10"/>
+            <property name="eclipselink.connection-pool.default.min" value="10"/>
+            <property name="eclipselink.connection-pool.default.max" value="50"/>
+            
+            <!-- Batch Writing -->
+            <property name="eclipselink.jdbc.batch-writing" value="JDBC"/>
+            <property name="eclipselink.jdbc.batch-writing.size" value="100"/>
+            
+            <!-- Cache Tuning -->
+            <property name="eclipselink.cache.shared.default" value="true"/>
+            <property name="eclipselink.cache.size.default" value="10000"/>
+            <property name="eclipselink.cache.type.default" value="SoftWeak"/>
+            
+            <!-- Query Tuning -->
+            <property name="eclipselink.query-results-cache" value="true"/>
+            <property name="eclipselink.jdbc.cache-statements" value="true"/>
+            <property name="eclipselink.jdbc.cache-statements.size" value="50"/>
+            
+            <!-- Optimization -->
+            <property name="eclipselink.weaving" value="static"/>
+            <property name="eclipselink.logging.level" value="WARNING"/>
+            <property name="eclipselink.logging.timestamp" value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence>

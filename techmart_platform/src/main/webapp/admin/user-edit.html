@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Edit User</h1>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="users.html">Users</a>
+                <a href="../logout.html">Logout</a>
+            </nav>
+        </header>
+        <section class="card">
+            <h2>User Details</h2>
+            <div class="form-grid">
+                <div>
+                    <label for="userId">ID</label>
+                    <input id="userId" disabled>
+                </div>
+                <div>
+                    <label for="username">Username</label>
+                    <input id="username">
+                </div>
+                <div>
+                    <label for="email">Email</label>
+                    <input id="email" type="email">
+                </div>
+                <div>
+                    <label for="role">Role</label>
+                    <select id="role">
+                        <option value="CUSTOMER">CUSTOMER</option>
+                        <option value="ADMIN">ADMIN</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="active">Active</label>
+                    <input id="active" type="checkbox">
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label for="address">Delivery Address</label>
+                    <input id="address" type="text" placeholder="Customer delivery address">
+                </div>
+                <div>
+                    <label for="telephone">Telephone</label>
+                    <input id="telephone" type="tel" placeholder="Customer phone number">
+                </div>
+            </div>
+            <div class="actions">
+                <button onclick="saveUser()">Save User</button>
+                <button class="danger" onclick="deleteUser()">Delete User</button>
+            </div>
+            <div id="userMessage" class="message">Loading user profile...</div>
+        </section>
+    </div>
+    <script src="../common.js"></script>
+    <script>
+        const userId = getQueryParam('id');
+
+        async function loadUser() {
+            if (!userId) {
+                showMessage('userMessage', 'Missing user id in URL.', true);
+                return;
+            }
+            const response = await fetch(api(`/api/customers/${encodeURIComponent(userId)}`));
+            if (!response.ok) {
+                showMessage('userMessage', 'Failed to load user.', true);
+                return;
+            }
+            const body = await parseJson(response);
+            const user = body.user || body;
+            document.getElementById('userId').value = user.id;
+            document.getElementById('username').value = user.username;
+            document.getElementById('email').value = user.email;
+            document.getElementById('role').value = user.role;
+            document.getElementById('active').checked = user.active !== false;
+            document.getElementById('address').value = user.address || '';
+            document.getElementById('telephone').value = user.telephone || '';
+            showMessage('userMessage', 'Edit details and save.');
+        }
+
+        async function saveUser() {
+            const data = new URLSearchParams();
+            data.append('username', document.getElementById('username').value);
+            data.append('email', document.getElementById('email').value);
+            data.append('role', document.getElementById('role').value);
+            data.append('active', document.getElementById('active').checked);
+            data.append('address', document.getElementById('address').value);
+            data.append('telephone', document.getElementById('telephone').value);
+
+            const response = await fetch(api(`/api/customers/${encodeURIComponent(userId)}`), {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: data.toString()
+            });
+            const result = await parseJson(response);
+            showMessage('userMessage', result.message || (response.ok ? 'User updated successfully.' : 'Failed to update user.'), !response.ok, true);
+        }
+
+        async function deleteUser() {
+            if (!confirm('Delete this user permanently?')) {
+                return;
+            }
+            const response = await fetch(api(`/api/customers/${encodeURIComponent(userId)}`), { method: 'DELETE' });
+            const result = await parseJson(response);
+            showMessage('userMessage', result.message || (response.ok ? 'Deleted user.' : 'Failed to delete user.'), !response.ok, true);
+            if (response.ok) {
+                setTimeout(() => window.location.href = appPath('admin/users.html'), 1400);
+            }
+        }
+
+        requireLogin('../login.html').then(user => {
+            if (!user) window.location.href = appPath('login.html');
+            else if (user.role !== 'ADMIN') window.location.href = appPath('user/home.html');
+            else loadUser();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="../styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Admin Dashboard</h1>
+            <nav>
+                <a href="product-add.html">Add Product</a>
+                <a href="product-list.html">Products</a>
+                <a href="orders.html">Orders</a>
+                <a href="users.html">Users</a>
+                <a href="../logout.html">Logout</a>
+            </nav>
+        </header>
+        <section class="hero">
+            <h2>Welcome back, Administrator</h2>
+            <p>Overview of active orders, revenue, and stock alerts.</p>
+        </section>
+        <section class="section-row">
+            <div class="card">
+                <h2>Total orders</h2>
+                <div id="ordersCount" class="status-pill">Loading...</div>
+            </div>
+            <div class="card">
+                <h2>Revenue estimate</h2>
+                <div id="revenueValue" class="status-pill">Loading...</div>
+            </div>
+            <div class="card">
+                <h2>Low stock</h2>
+                <div id="lowStock" class="status-pill">Loading...</div>
+            </div>
+        </section>
+        <section class="section-row">
+            <div class="card" style="margin-bottom:0;">
+                <h2>Order Status Distribution</h2>
+                <div style="position: relative; height:250px; width:100%; display:flex; justify-content:center;">
+                    <canvas id="orderChart"></canvas>
+                </div>
+            </div>
+            <div class="card" style="margin-bottom:0;">
+                <h2>Product Stock Levels (Top 5)</h2>
+                <div style="position: relative; height:250px; width:100%;">
+                    <canvas id="stockChart"></canvas>
+                </div>
+            </div>
+        </section>
+        <section class="card">
+            <h2>Recent orders</h2>
+            <div id="recentOrders" class="message">Loading recent orders...</div>
+        </section>
+    </div>
+    <script src="../common.js"></script>
+    <script>
+        async function loadDashboard() {
+            const user = await requireLogin('../login.html');
+            if (!user) {
+                window.location.href = appPath('login.html');
+                return;
+            }
+            if (user.role !== 'ADMIN') {
+                window.location.href = appPath('user/home.html');
+                return;
+            }
+
+            const [ordersResp, productsResp, metricsResp] = await Promise.all([
+                fetch(api('/api/orders')),
+                fetch(api('/api/products')),
+                fetch(api('/api/metrics'))
+            ]);
+
+            const orders = ordersResp.ok ? await ordersResp.json() : [];
+            const products = productsResp.ok ? await productsResp.json() : [];
+            const metrics = metricsResp.ok ? await metricsResp.json() : {};
+
+            const productById = products.reduce((map, product) => {
+                map[product.id] = product;
+                return map;
+            }, {});
+
+            document.getElementById('ordersCount').textContent = orders.length;
+
+            const revenue = orders.reduce((sum, order) => {
+                if (order.status === 'CANCELLED') return sum;
+                const product = productById[order.productId];
+                const unitPrice = product ? product.price : 0;
+                return sum + (unitPrice * order.quantity);
+            }, 0);
+            document.getElementById('revenueValue').textContent = formatCurrency(revenue);
+
+            const lowStockEl = document.getElementById('lowStock');
+            const lowStocks = products.filter(product => product.stock <= 20);
+            if (lowStocks.length === 0) {
+                lowStockEl.textContent = 'All good';
+                lowStockEl.style.backgroundColor = 'var(--success-bg)';
+                lowStockEl.style.color = 'var(--success-text)';
+            } else {
+                lowStockEl.textContent = lowStocks.map(product => `${product.name} (${product.stock})`).join(', ');
+                lowStockEl.style.backgroundColor = 'var(--danger-bg)';
+                lowStockEl.style.color = 'var(--danger-text)';
+            }
+
+            const telemetry = metrics.totalCheckouts != null
+                ? `<div style="margin-bottom:10px; color:var(--muted);">Checkouts: ${metrics.totalCheckouts}, success: ${metrics.successfulCheckouts}, failed: ${metrics.failedCheckouts}, cache hit rate: ${Number(metrics.cacheHitRate || 0).toFixed(2)}%</div>`
+                : '';
+
+            document.getElementById('recentOrders').innerHTML = telemetry + (orders.length
+                ? `<ul>${orders.slice(0,5).map(order => {
+                    const product = productById[order.productId];
+                    const total = product ? formatCurrency(product.price * order.quantity) : order.quantity;
+                    return `<li>${order.id} - ${order.productId} x ${order.quantity} (${order.status}) - ${total}</li>`;
+                }).join('')}</ul>`
+                : 'No recent orders found.');
+
+            // Render charts if Chart.js is loaded
+            if (typeof Chart !== 'undefined') {
+                renderDashboardCharts(orders, products);
+            }
+        }
+
+        function renderDashboardCharts(orders, products) {
+            // 1. Order Status Pie Chart
+            const statusMap = { PENDING: 0, PROCESSING: 0, COMPLETED: 0, CANCELLED: 0 };
+            orders.forEach(o => {
+                if (statusMap[o.status] !== undefined) {
+                    statusMap[o.status]++;
+                }
+            });
+
+            const orderCanvas = document.getElementById('orderChart');
+            if (orderCanvas) {
+                if (window.orderChartInstance) {
+                    window.orderChartInstance.destroy();
+                }
+                window.orderChartInstance = new Chart(orderCanvas, {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(statusMap),
+                        datasets: [{
+                            data: Object.values(statusMap),
+                            backgroundColor: ['#e2e8f0', '#fbbf24', '#10b981', '#ef4444'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: '#64748b', font: { weight: 'bold' } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 2. Product Stock Bar Chart
+            const sortedProducts = [...products].sort((a, b) => b.stock - a.stock).slice(0, 5);
+            const stockCanvas = document.getElementById('stockChart');
+            if (stockCanvas) {
+                if (window.stockChartInstance) {
+                    window.stockChartInstance.destroy();
+                }
+                window.stockChartInstance = new Chart(stockCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: sortedProducts.map(p => p.name),
+                        datasets: [{
+                            label: 'Stock Level',
+                            data: sortedProducts.map(p => p.stock),
+                            backgroundColor: '#4f46e5',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 10 }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        loadDashboard();
+        setInterval(loadDashboard, 5000);
+    </script>
+</body>
+</html>
+
+
+
+
+
+

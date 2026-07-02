@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Add Product</h1>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="product-list.html">Products</a>
+                <a href="../logout.html">Logout</a>
+            </nav>
+        </header>
+        <section class="card">
+            <h2>New product</h2>
+            <div class="form-grid">
+                <div>
+                    <label for="productId">Product ID</label>
+                    <input id="productId" placeholder="PROD_010">
+                </div>
+                <div>
+                    <label for="productName">Name</label>
+                    <input id="productName" placeholder="Wireless Mouse">
+                </div>
+                <div>
+                    <label for="productPrice">Price</label>
+                    <input id="productPrice" type="number" min="0" step="0.01" placeholder="49.99">
+                </div>
+                <div>
+                    <label for="productStock">Stock</label>
+                    <input id="productStock" type="number" min="0" placeholder="100">
+                </div>
+            </div>
+            <button onclick="createProduct()">Create Product</button>
+            <div id="productMessage" class="message">Enter product details and save.</div>
+        </section>
+    </div>
+    <script src="../common.js"></script>
+    <script>
+        async function createProduct() {
+            const data = new URLSearchParams();
+            data.append('id', document.getElementById('productId').value);
+            data.append('name', document.getElementById('productName').value);
+            data.append('price', document.getElementById('productPrice').value);
+            data.append('stock', document.getElementById('productStock').value);
+
+            const response = await fetch(api('/api/products'), {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: data.toString()
+            });
+            const result = await parseJson(response);
+            showMessage('productMessage', result.message || (response.ok ? 'Created product.' : 'Failed to create product'), !response.ok, true);
+            if (response.ok) {
+                setTimeout(() => window.location.href = appPath('admin/product-list.html'), 1200);
+            }
+        }
+
+        requireLogin('../login.html').then(user => {
+            if (!user) window.location.href = appPath('login.html');
+            else if (user.role !== 'ADMIN') window.location.href = appPath('user/home.html');
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+

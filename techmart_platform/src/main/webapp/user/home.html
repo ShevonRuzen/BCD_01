@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Home</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Customer Home</h1>
+            <nav>
+                <a href="products.html">Products</a>
+                <a href="cart.html">Cart</a>
+                <a href="orders.html">My Orders</a>
+                <a href="profile.html">Profile</a>
+                <a href="../logout.html">Logout</a>
+            </nav>
+        </header>
+        <section class="hero">
+            <h2>Welcome back, <span id="userName">Customer</span></h2>
+            <p>Browse products, manage your cart, and track orders.</p>
+        </section>
+        <section class="section-row">
+            <div class="card">
+                <h2>Open orders</h2>
+                <div id="orderCount" class="status-pill">Loading...</div>
+            </div>
+            <div class="card">
+                <h2>Cart items</h2>
+                <div id="cartCount" class="status-pill">Loading...</div>
+            </div>
+        </section>
+        <section class="card">
+            <h2>Quick actions</h2>
+            <div class="actions">
+                <button onclick="window.location.href=appPath('user/products.html')">Browse Products</button>
+                <button onclick="window.location.href=appPath('user/cart.html')">Review Cart</button>
+                <button onclick="window.location.href=appPath('user/orders.html')">View Orders</button>
+            </div>
+        </section>
+    </div>
+    <script src="../common.js"></script>
+    <script>
+        async function loadDashboard() {
+            const user = await requireLogin('../login.html');
+            if (!user) return;
+            if (user.role !== 'CUSTOMER') {
+                window.location.href = appPath('login.html');
+                return;
+            }
+            document.getElementById('userName').textContent = user.username;
+
+            const ordersResp = await fetch(api('/api/orders'));
+            const orders = ordersResp.ok ? await ordersResp.json() : [];
+            document.getElementById('orderCount').textContent = orders.length;
+
+            const cartResp = await fetch(api('/api/checkout?action=cart'));
+            const cartBody = cartResp.ok ? await cartResp.json() : {cart:{}};
+            document.getElementById('cartCount').textContent = Object.keys(cartBody.cart || {}).length;
+        }
+        loadDashboard();
+    </script>
+</body>
+</html>
+
+
+
+
+
+

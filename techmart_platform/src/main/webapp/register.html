@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechMart Register</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TechMart</h1>
+            <nav><a href="login.html">Sign in</a></nav>
+        </header>
+        <section class="hero">
+            <h2>Create a new customer account</h2>
+            <p>Register as a user to browse products, order, and track your purchases.</p>
+        </section>
+        <section class="card">
+            <div class="form-grid">
+                <div>
+                    <label for="username">Username</label>
+                    <input id="username" placeholder="Your name" value="alice">
+                </div>
+                <div>
+                    <label for="email">Email</label>
+                    <input id="email" type="email" placeholder="you@example.com" >
+                </div>
+                <div>
+                    <label for="password">Password</label>
+                    <input id="password" type="password" placeholder="Create password" >
+                </div>
+            </div>
+            <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap;">
+                <button onclick="register()">Register</button>
+                <a class="secondary" href="login.html">Already registered?</a>
+            </div>
+            <div id="message" class="message" style="margin-top:18px;">Registration is for users only.</div>
+        </section>
+    </div>
+    <script src="common.js"></script>
+    <script>
+        async function register() {
+            const data = new URLSearchParams();
+            data.append('username', document.getElementById('username').value);
+            data.append('email', document.getElementById('email').value);
+            data.append('password', document.getElementById('password').value);
+
+            const response = await fetch(api('/api/auth/register'), {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: data.toString()
+            });
+            const result = await parseJson(response);
+            if (!response.ok) {
+                showMessage('message', result.message || 'Registration failed', true);
+                return;
+            }
+            showMessage('message', 'Registration successful. Please sign in.', false, true);
+            setTimeout(() => window.location.href = 'login.html', 1400);
+        }
+
+        fetchCurrentUser().then(user => {
+            if (user) {
+                redirectToRole(user.role);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+

@@ -1,0 +1,29 @@
+-- MySQL Configuration for TechMart Production
+-- Add to my.cnf / my.ini
+
+[mysqld]
+# Connection Pool
+max_connections=200
+wait_timeout=600
+interactive_timeout=600
+connect_timeout=10
+
+# InnoDB Buffer Pool
+innodb_buffer_pool_size=2G
+innodb_buffer_pool_instances=4
+innodb_log_buffer_size=64M
+innodb_flush_log_at_trx_commit=2
+
+# Query Cache (if using MySQL 5.7)
+query_cache_type=1
+query_cache_size=256M
+query_cache_limit=2M
+
+# Thread Performance
+thread_cache_size=50
+thread_stack=256K
+
+# I/O Performance
+innodb_file_per_table=1
+innodb_flush_method=O_DIRECT
+innodb_io_capacity=2000

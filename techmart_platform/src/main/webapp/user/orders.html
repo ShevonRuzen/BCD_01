@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>My Orders</h1>
+            <nav>
+                <a href="home.html">Home</a>
+                <a href="products.html">Products</a>
+                <a href="cart.html">Cart</a>
+                <a href="profile.html">Profile</a>
+                <a href="../logout.html">Logout</a>
+            </nav>
+        </header>
+        <section class="card">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Product</th><th>Qty</th><th>Price</th><th>Status</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="ordersTable"></tbody>
+                </table>
+            </div>
+            <div id="ordersMessage" class="message">Loading your orders...</div>
+        </section>
+    </div>
+    <script src="../common.js"></script>
+    <script>
+        async function loadOrders() {
+            const user = await requireLogin('../login.html');
+            if (!user) return;
+            if (user.role !== 'CUSTOMER') {
+                window.location.href = appPath('login.html');
+                return;
+            }
+            const response = await fetch(api('/api/orders'));
+            if (!response.ok) {
+                showMessage('ordersMessage', 'Failed to load orders', true);
+                return;
+            }
+            const orders = await response.json();
+            const tbody = document.getElementById('ordersTable');
+            tbody.innerHTML = '';
+            orders.forEach(order => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.productName || order.productId}</td>
+                    <td>${order.quantity}</td>
+                    <td>${formatCurrency(order.totalPrice || 0)}</td>
+                    <td>${order.status}</td>
+                    <td><button class="small" onclick="viewOrder('${order.id}')">View</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">No orders found yet.</td></tr>';
+            }
+            showMessage('ordersMessage', orders.length ? `Loaded ${orders.length} orders` : 'No orders found.');
+        }
+
+        function viewOrder(id) {
+            window.location.href = `${appPath('user/order-detail.html')}?id=${encodeURIComponent(id)}`;
+        }
+
+        loadOrders();
+        setInterval(loadOrders, 5000);
+    </script>
+</body>
+</html>
+
+
+
+
+

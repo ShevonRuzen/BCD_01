@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Product Details</h1>
+            <nav>
+                <a href="products.html">Products</a>
+                <a href="cart.html">Cart</a>
+                <a href="home.html">Home</a>
+                <a href="../logout.html">Logout</a>
+            </nav>
+        </header>
+        <section class="card">
+            <h2 id="productName">Loading...</h2>
+            <p id="productDescription">Find the latest details on this item.</p>
+            <div class="form-grid">
+                <div>
+                    <label>ID</label>
+                    <input id="productId" disabled>
+                </div>
+                <div>
+                    <label>Price</label>
+                    <input id="productPrice" disabled>
+                </div>
+                <div>
+                    <label>Stock</label>
+                    <input id="productStock" disabled>
+                </div>
+                <div>
+                    <label for="productQty">Quantity</label>
+                    <input id="productQty" type="number" min="1" value="1">
+                </div>
+            </div>
+            <div class="actions">
+                <button id="addToCartBtn" onclick="addToCart()">Add to Cart</button>
+                <button class="secondary" onclick="window.location.href=appPath('user/products.html')">Back to products</button>
+            </div>
+            <div id="productMessage" class="message">Load the product to see details.</div>
+        </section>
+    </div>
+    <script src="../common.js"></script>
+    <script>
+        const productId = getQueryParam('id');
+
+        async function loadProduct() {
+            if (!productId) {
+                showMessage('productMessage', 'Product id not provided.', true);
+                return;
+            }
+            const response = await fetch(api(`/api/products/${encodeURIComponent(productId)}`));
+            if (!response.ok) {
+                showMessage('productMessage', 'Could not load product.', true);
+                return;
+            }
+            const data = await response.json();
+            const product = data.product || data;
+            document.getElementById('productName').textContent = product.name;
+            document.getElementById('productDescription').textContent = 'Choose the quantity below and add this product to your cart.';
+            document.getElementById('productId').value = product.id;
+            document.getElementById('productPrice').value = formatCurrency(product.price);
+            document.getElementById('productStock').value = product.stock;
+            const qtyInput = document.getElementById('productQty');
+            const addButton = document.getElementById('addToCartBtn');
+            if (product.stock > 0) {
+                qtyInput.min = '1';
+                qtyInput.max = String(product.stock);
+                qtyInput.value = '1';
+                addButton.disabled = false;
+                showMessage('productMessage', 'Product loaded. Add to cart when ready.');
+            } else {
+                qtyInput.min = '0';
+                qtyInput.max = '0';
+                qtyInput.value = '0';
+                addButton.disabled = true;
+                showMessage('productMessage', 'This product is currently out of stock.', true);
+            }
+        }
+
+        async function addToCart() {
+            const quantity = Math.max(1, Math.floor(Number(document.getElementById('productQty').value || 1)));
+            const response = await fetch(api(`/api/checkout?action=add&id=${encodeURIComponent(productId)}&qty=${encodeURIComponent(quantity)}`));
+            const result = await parseJson(response);
+            showMessage('productMessage', result.message || (response.ok ? 'Added to cart' : 'Failed to add'), !response.ok || !result.success, true);
+        }
+
+        requireLogin('../login.html').then(user => {
+            if (!user) return;
+            if (user.role !== 'CUSTOMER') {
+                window.location.href = appPath('login.html');
+                return;
+            }
+            loadProduct();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+

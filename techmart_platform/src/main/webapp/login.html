@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechMart Login</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TechMart</h1>
+            <nav><a href="register.html">Register</a></nav>
+        </header>
+        <section class="hero">
+            <h2>Sign in to your account</h2>
+            <p>Use your admin or customer credentials to enter the appropriate dashboard.</p>
+        </section>
+        <section class="card">
+            <div class="form-grid">
+                <div>
+                    <label for="email">Email</label>
+                    <input id="email" type="email" placeholder="you@example.com" >
+                </div>
+                <div>
+                    <label for="password">Password</label>
+                    <input id="password" type="password" placeholder="Enter password" >
+                </div>
+            </div>
+            <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap;">
+                <button onclick="login()">Log In</button>
+                <a class="secondary" href="register.html">New user? Register</a>
+            </div>
+            <div id="message" class="message" style="margin-top:18px;">Enter your credentials and sign in.</div>
+        </section>
+    </div>
+    <script src="common.js"></script>
+    <script>
+        async function login() {
+            const data = new URLSearchParams();
+            data.append('email', document.getElementById('email').value);
+            data.append('password', document.getElementById('password').value);
+
+            const response = await fetch(api('/api/auth/login'), {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: data.toString()
+            });
+            const result = await parseJson(response);
+            if (!response.ok) {
+                showMessage('message', result.message || 'Login failed', true);
+                return;
+            }
+            showMessage('message', 'Login successful, redirecting...', false, true);
+            redirectToRole(result.user.role);
+        }
+
+        fetchCurrentUser().then(user => {
+            if (user) {
+                redirectToRole(user.role);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+

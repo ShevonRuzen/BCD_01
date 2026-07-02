@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Manage Products</h1>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="product-add.html">Add Product</a>
+                <a href="../logout.html">Logout</a>
+            </nav>
+        </header>
+        <section class="card">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Name</th><th>Price</th><th>Stock</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="productTable"></tbody>
+                </table>
+            </div>
+            <div id="productMessage" class="message">Loading products...</div>
+        </section>
+    </div>
+    <script src="../common.js"></script>
+    <script>
+        async function loadProducts() {
+            const response = await fetch(api('/api/products'));
+            const products = await response.json();
+            const tbody = document.getElementById('productTable');
+            tbody.innerHTML = '';
+            products.forEach(product => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${product.id}</td>
+                    <td>${product.name}</td>
+                    <td>${formatCurrency(product.price)}</td>
+                    <td>${product.stock}</td>
+                    <td>
+                        <button class="small secondary" onclick="goEdit('${product.id}')">Edit</button>
+                        <button class="small danger" onclick="deleteProduct('${product.id}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            showMessage('productMessage', products.length ? `Loaded ${products.length} products` : 'No products found');
+        }
+
+        function goEdit(id) {
+            window.location.href = `${appPath('admin/product-edit.html')}?id=${encodeURIComponent(id)}`;
+        }
+
+        async function deleteProduct(id) {
+            const response = await fetch(api(`/api/products/${id}`), { method: 'DELETE' });
+            const result = await parseJson(response);
+            showMessage('productMessage', result.message || 'Deleted.', !response.ok, true);
+            loadProducts();
+        }
+
+        requireLogin('../login.html').then(user => {
+            if (!user) window.location.href = appPath('login.html');
+            else if (user.role !== 'ADMIN') window.location.href = appPath('user/home.html');
+            else {
+                loadProducts();
+                setInterval(loadProducts, 5000);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+

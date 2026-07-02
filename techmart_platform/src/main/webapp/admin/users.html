@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>User Management</h1>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="product-list.html">Products</a>
+                <a href="orders.html">Orders</a>
+                <a href="../logout.html">Logout</a>
+            </nav>
+        </header>
+        <section class="card">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr><th>Username</th><th>Email</th><th>Role</th><th>Active</th><th>Address</th><th>Telephone</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="usersTable"></tbody>
+                </table>
+            </div>
+            <div id="usersMessage" class="message">Loading users...</div>
+        </section>
+    </div>
+    <script src="../common.js"></script>
+    <script>
+        async function loadUsers() {
+            const response = await fetch(api('/api/customers'));
+            const users = await response.json();
+            const tbody = document.getElementById('usersTable');
+            tbody.innerHTML = '';
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td>${user.active ? 'Yes' : 'No'}</td>
+                    <td style="max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${user.address || ''}">${user.address || '<span style="color:var(--danger); font-size:0.82rem;">Not set</span>'}</td>
+                    <td>${user.telephone || '—'}</td>
+                    <td class="inline">
+                        <button class="small" onclick="editUser('${user.id}')">Edit</button>
+                        <button class="small danger" onclick="deleteUser('${user.id}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            showMessage('usersMessage', users.length ? `Loaded ${users.length} users` : 'No users found');
+        }
+
+        function editUser(id) {
+            window.location.href = `${appPath('admin/user-edit.html')}?id=${encodeURIComponent(id)}`;
+        }
+
+        async function deleteUser(id) {
+            const response = await fetch(api(`/api/customers/${encodeURIComponent(id)}`), { method: 'DELETE' });
+            const result = await parseJson(response);
+            showMessage('usersMessage', result.message || 'User deleted.', !response.ok, true);
+            loadUsers();
+        }
+
+        requireLogin('../login.html').then(user => {
+            if (!user) window.location.href = appPath('login.html');
+            else if (user.role !== 'ADMIN') window.location.href = appPath('user/home.html');
+            else {
+                loadUsers();
+                setInterval(loadUsers, 5000);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+

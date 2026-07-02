@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details – TechMart</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Order Details</h1>
+            <nav>
+                <a href="home.html">Home</a>
+                <a href="orders.html">My Orders</a>
+                <a href="cart.html">Cart</a>
+                <a href="profile.html">Profile</a>
+                <a href="../logout.html">Logout</a>
+            </nav>
+        </header>
+        <section class="card">
+            <h2>Order <span id="orderId" style="color:var(--accent);">Loading...</span></h2>
+            <div class="form-grid">
+                <div>
+                    <label>Product</label>
+                    <input id="orderProduct" disabled>
+                </div>
+                <div>
+                    <label>Quantity</label>
+                    <input id="orderQuantity" disabled>
+                </div>
+                <div>
+                    <label>Unit Price</label>
+                    <input id="orderUnitPrice" disabled>
+                </div>
+                <div>
+                    <label>Total Price</label>
+                    <input id="orderTotalPrice" disabled style="font-weight:bold; color:var(--accent);">
+                </div>
+                <div>
+                    <label>Status</label>
+                    <input id="orderStatus" disabled>
+                </div>
+                <div>
+                    <label>Customer Email</label>
+                    <input id="orderCustomer" disabled>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label>Delivery Address</label>
+                    <input id="orderAddress" disabled placeholder="No address on record">
+                </div>
+            </div>
+            <div class="actions" style="margin-top:16px;">
+                <button class="secondary" onclick="window.location.href=appPath('user/orders.html')">Back to orders</button>
+            </div>
+            <div id="orderMessage" class="message">Loading order…</div>
+        </section>
+    </div>
+    <script src="../common.js"></script>
+    <script>
+        const orderId = getQueryParam('id');
+
+        async function loadOrder() {
+            if (!orderId) {
+                showMessage('orderMessage', 'Order id missing.', true);
+                return;
+            }
+            const response = await fetch(api(`/api/orders/${encodeURIComponent(orderId)}`));
+            if (!response.ok) {
+                const body = await parseJson(response);
+                showMessage('orderMessage', body.message || 'Unable to load order.', true);
+                return;
+            }
+            const resp = await response.json();
+            const data = resp.order || resp;
+            document.getElementById('orderId').textContent = data.id;
+            document.getElementById('orderProduct').value = data.productName || data.productId;
+            document.getElementById('orderQuantity').value = data.quantity;
+            document.getElementById('orderUnitPrice').value = formatCurrency(data.unitPrice || 0);
+            document.getElementById('orderTotalPrice').value = formatCurrency(data.totalPrice || 0);
+            document.getElementById('orderStatus').value = data.status;
+            document.getElementById('orderCustomer').value = data.customerEmail;
+            document.getElementById('orderAddress').value = data.deliveryAddress || 'Not specified';
+            showMessage('orderMessage', 'Order loaded.');
+        }
+
+        requireLogin('../login.html').then(user => {
+            if (!user) return;
+            if (user.role !== 'CUSTOMER') {
+                window.location.href = appPath('login.html');
+                return;
+            }
+            loadOrder();
+            setInterval(loadOrder, 5000);
+        });
+    </script>
+</body>
+</html>

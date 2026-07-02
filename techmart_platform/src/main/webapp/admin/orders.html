@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Orders</h1>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="product-list.html">Products</a>
+                <a href="users.html">Users</a>
+                <a href="../logout.html">Logout</a>
+            </nav>
+        </header>
+        <section class="card">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Product</th><th>Qty</th><th>Price</th><th>Customer</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="ordersTable"></tbody>
+                </table>
+            </div>
+            <div id="ordersMessage" class="message">Loading orders...</div>
+        </section>
+    </div>
+    <script src="../common.js"></script>
+    <script>
+        async function loadOrders() {
+            const response = await fetch(api('/api/orders'));
+            const orders = await response.json();
+            const tbody = document.getElementById('ordersTable');
+            tbody.innerHTML = '';
+            orders.forEach(order => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.productName || order.productId}</td>
+                    <td>${order.quantity}</td>
+                    <td>${formatCurrency(order.totalPrice || 0)}</td>
+                    <td>${order.customerEmail}</td>
+                    <td>${order.status}</td>
+                    <td class="inline">
+                        <select id="status-${order.id}">
+                            <option value="PENDING" ${order.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
+                            <option value="PROCESSING" ${order.status === 'PROCESSING' ? 'selected' : ''}>PROCESSING</option>
+                            <option value="COMPLETED" ${order.status === 'COMPLETED' ? 'selected' : ''}>COMPLETED</option>
+                            <option value="CANCELLED" ${order.status === 'CANCELLED' ? 'selected' : ''}>CANCELLED</option>
+                        </select>
+                        <button class="small" onclick="updateStatus('${order.id}')">Save</button>
+                        <button class="small danger" onclick="deleteOrder('${order.id}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            showMessage('ordersMessage', orders.length ? `Loaded ${orders.length} orders` : 'No orders found');
+        }
+
+        async function updateStatus(id) {
+            const status = document.getElementById(`status-${id}`).value;
+            const data = new URLSearchParams();
+            data.append('status', status);
+            const response = await fetch(api(`/api/orders/${encodeURIComponent(id)}`), {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: data.toString()
+            });
+            const result = await parseJson(response);
+            showMessage('ordersMessage', result.message || 'Order updated.', !response.ok, true);
+            loadOrders();
+        }
+
+        async function deleteOrder(id) {
+            const response = await fetch(api(`/api/orders/${encodeURIComponent(id)}`), { method: 'DELETE' });
+            const result = await parseJson(response);
+            showMessage('ordersMessage', result.message || 'Order deleted.', !response.ok, true);
+            loadOrders();
+        }
+
+        requireLogin('../login.html').then(user => {
+            if (!user) window.location.href = appPath('login.html');
+            else if (user.role !== 'ADMIN') window.location.href = appPath('user/home.html');
+            else {
+                loadOrders();
+                setInterval(loadOrders, 5000);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+

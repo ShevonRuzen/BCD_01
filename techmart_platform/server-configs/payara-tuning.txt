@@ -1,0 +1,111 @@
+# JVM Tuning Parameters for Production
+# Add to domain.xml or asenv.conf
+
+# ================================================
+# 1. HEAP MEMORY CONFIGURATION
+# ================================================
+-Xms4G                                # Initial heap size (4GB)
+-Xmx8G                                # Maximum heap size (8GB)
+-XX:NewSize=1G                        # Initial young generation size
+-XX:MaxNewSize=2G                     # Maximum young generation size
+-XX:SurvivorRatio=8                   # Eden:Survivor ratio (8:1:1)
+
+# ================================================
+# 2. GARBAGE COLLECTION CONFIGURATION
+# ================================================
+-XX:+UseG1GC                          # Use G1 Garbage Collector
+-XX:MaxGCPauseMillis=200              # Target max GC pause time
+-XX:G1HeapRegionSize=16m              # G1 region size
+-XX:InitiatingHeapOccupancyPercent=45 # Start concurrent GC at 45% heap usage
+-XX:G1ReservePercent=15               # Reserve 15% heap for evacuation
+-XX:+UseStringDeduplication           # Reduce memory usage
+-XX:+DisableExplicitGC                # Prevent manual GC calls
+
+# ================================================
+# 3. THREAD POOL CONFIGURATION
+# ================================================
+-XX:ParallelGCThreads=4               # GC parallel threads
+-XX:ConcGCThreads=2                   # Concurrent GC threads
+-XX:CICompilerCount=2                 # Compiler threads
+
+# ================================================
+# 4. DIAGNOSTIC AND LOGGING
+# ================================================
+-XX:+PrintGCDetails                   # Detailed GC logging
+-XX:+PrintGCDateStamps                # Timestamps in GC logs
+-Xloggc:/opt/payara/logs/gc.log       # GC log file
+-XX:+HeapDumpOnOutOfMemoryError       # Heap dump on OOM
+-XX:HeapDumpPath=/opt/payara/logs/heapdump.hprof
+-XX:+PrintCommandLineFlags            # Show JVM settings
+
+# ================================================
+# 5. PERFORMANCE OPTIMIZATIONS
+# ================================================
+-XX:+OptimizeStringConcat             # Optimize String concatenation
+-XX:+UseCompressedOops                # Compressed object pointers
+-XX:+AlwaysPreTouch                   # Pre-touch all heap pages
+-XX:+UseThreadPriorities              # Respect thread priorities
+-Djava.awt.headless=true              # Headless mode (no display)
+-Djava.net.preferIPv4Stack=true       # Prefer IPv4 for performance
+
+
+<!-- Payara domain.xml - EJB Pool Configuration -->
+<ejb-container>
+    <!-- Stateless Session Bean Pool -->
+    <ejb-pool-config>
+        <stateless-session-bean-pool-config 
+            steady-pool-size="50"
+            max-pool-size="200"
+            pool-resize-quantity="10"
+            idle-timeout-in-seconds="300"
+            starvation-timeout-in-seconds="60"
+        />
+    </ejb-pool-config>
+    
+    <!-- MDB Pool Configuration -->
+    <mdb-container>
+        <mdb-pool-config 
+            steady-pool-size="20"
+            max-pool-size="100"
+            idle-timeout-in-seconds="60"
+        />
+    </mdb-container>
+</ejb-container>
+
+<!-- Payara domain.xml - JMS Queue Configuration -->
+<resources>
+    <connector-connection-pool 
+        name="jms/TechMartConnectionFactory"
+        max-pool-size="100"
+        min-pool-size="10"
+        idle-timeout-in-seconds="300"
+        connection-creation-retry-attempts="3"
+        connection-creation-retry-interval-in-seconds="10"
+    />
+    
+    <admin-object-resource 
+        name="jms/OrderQueue"
+        res-type="javax.jms.Queue"
+        description="TechMart Order Processing Queue">
+        <property name="maxNumMsgs" value="5000"/>
+        <property name="consumerFlowLimit" value="1000"/>
+    </admin-object-resource>
+</resources>
+
+<!-- Payara domain.xml - Thread Pool -->
+<thread-pools>
+    <thread-pool name="http-thread-pool" 
+        max-thread-pool-size="200" 
+        min-thread-pool-size="20"
+        idle-thread-timeout-in-seconds="30"/>
+    
+    <thread-pool name="jms-worker-thread-pool"
+        max-thread-pool-size="100"
+        min-thread-pool-size="10"
+        idle-thread-timeout-in-seconds="60"/>
+        
+    <thread-pool name="async-notification-pool"
+        max-thread-pool-size="50"
+        min-thread-pool-size="5"
+        idle-thread-timeout-in-seconds="30"/>
+</thread-pools>

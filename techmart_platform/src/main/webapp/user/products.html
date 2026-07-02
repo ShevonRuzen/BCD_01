@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Catalogue</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .toolbar input {
+            min-width: 280px;
+            flex: 1;
+        }
+
+        .catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .product-card {
+            background: rgba(15, 23, 42, 0.45);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .product-card h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            color: #fbbf24;
+            font-size: 0.92rem;
+            margin-bottom: 12px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Product Catalogue</h1>
+            <nav>
+                <a href="home.html">Home</a>
+                <a href="cart.html">Cart</a>
+                <a href="orders.html">My Orders</a>
+                <a href="../logout.html">Logout</a>
+            </nav>
+        </header>
+        <section class="hero">
+            <h2>Browse live inventory</h2>
+            <p>Search the database-backed product list and open any item to add it to your cart.</p>
+        </section>
+        <section class="card">
+            <div class="toolbar">
+                <input id="searchBox" type="search" placeholder="Search by product name or ID" oninput="renderProducts()">
+            </div>
+            <div id="productSummary" class="status-pill" style="margin-bottom:16px; display:inline-block;">Loading products...</div>
+            <div id="productGrid" class="catalog-grid"></div>
+            <div id="productMessage" class="message" style="margin-top:18px;">Loading product catalogue...</div>
+        </section>
+    </div>
+    <script src="../common.js"></script>
+    <script>
+        let allProducts = [];
+
+        async function loadProducts() {
+            const response = await fetch(api('/api/products'));
+            if (!response.ok) {
+                showMessage('productMessage', 'Unable to load products.', true);
+                document.getElementById('productSummary').textContent = '0 products';
+                return;
+            }
+            allProducts = await response.json();
+            document.getElementById('productSummary').textContent = `${allProducts.length} products available`;
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const query = document.getElementById('searchBox').value.trim().toLowerCase();
+            const filtered = allProducts.filter(product => {
+                if (!query) return true;
+                return product.name.toLowerCase().includes(query) || product.id.toLowerCase().includes(query);
+            });
+
+            const grid = document.getElementById('productGrid');
+            
+            // Preserve quantity input values
+            const qtyInputs = {};
+            allProducts.forEach(p => {
+                const inp = document.getElementById(`qty-${p.id}`);
+                if (inp) qtyInputs[p.id] = inp.value;
+            });
+
+            grid.innerHTML = '';
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="message">No products match your search.</div>';
+                showMessage('productMessage', 'Search complete. No matches found.');
+                return;
+            }
+
+            filtered.forEach(product => {
+                const card = document.createElement('article');
+                card.className = 'product-card';
+                const savedVal = qtyInputs[product.id] != null ? qtyInputs[product.id] : (product.stock > 0 ? 1 : 0);
+                card.innerHTML = `
+                    <h3>${product.name}</h3>
+                    <div class="product-meta">
+                        <span>${product.id}</span>
+                        <span>${formatCurrency(product.price)}</span>
+                    </div>
+                    ${product.stock > 0 
+                        ? `<div class="status-pill" style="display:inline-block; margin-bottom:10px;">Stock: ${product.stock}</div>`
+                        : `<div class="status-pill" style="display:inline-block; margin-bottom:10px; background-color: var(--danger-bg); color: var(--danger-text);">Out of stock</div>`
+                    }
+                    <p style="margin:0; color:var(--muted);">Browse product details, then add the item to your cart.</p>
+                    <div style="margin-top:12px;">
+                        <label for="qty-${product.id}" style="display:block; margin-bottom:6px; color:var(--muted);">Quantity</label>
+                        <input id="qty-${product.id}" type="number" min="${product.stock > 0 ? 1 : 0}" max="${product.stock}" value="${savedVal}">
+                    </div>
+                    <div class="card-actions">
+                        <button onclick="goDetail('${product.id}')">View details</button>
+                        <button class="secondary" onclick="addQuick('${product.id}')" ${product.stock > 0 ? '' : 'disabled'}>Add to cart</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            showMessage('productMessage', `Showing ${filtered.length} of ${allProducts.length} products.`);
+        }
+
+        function goDetail(id) {
+            window.location.href = `${appPath('user/product-detail.html')}?id=${encodeURIComponent(id)}`;
+        }
+
+        async function addQuick(id) {
+            const quantityInput = document.getElementById(`qty-${id}`);
+            const quantity = Math.max(1, Math.floor(Number(quantityInput ? quantityInput.value : 1) || 1));
+            const response = await fetch(api(`/api/checkout?action=add&id=${encodeURIComponent(id)}&qty=${encodeURIComponent(quantity)}`));
+            const result = await parseJson(response);
+            showMessage('productMessage', result.message || (response.ok ? 'Added to cart.' : 'Failed to add to cart.'), !response.ok || !result.success, true);
+        }
+
+        requireLogin('../login.html').then(user => {
+            if (!user) return;
+            if (user.role !== 'CUSTOMER') {
+                window.location.href = appPath('login.html');
+                return;
+            }
+            loadProducts();
+            setInterval(loadProducts, 5000);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+

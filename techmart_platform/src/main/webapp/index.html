@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechMart Admin Dashboard</title>
+    <script>window.location.href = 'login.html';</script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #111827;
+            --surface-2: #0b1120;
+            --surface-3: #1e293b;
+            --border: #334155;
+            --text: #e5eefc;
+            --muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-2: #2563eb;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --radius: 12px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: linear-gradient(180deg, var(--bg), #020617);
+            color: var(--text);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .status-pill {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.1fr 1.4fr;
+            gap: 18px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px;
+            box-shadow: var(--shadow);
+        }
+
+        .card h2, .card h3 {
+            margin-top: 0;
+            margin-bottom: 14px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .field {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        input, select, textarea, button {
+            font: inherit;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+            color: var(--text);
+        }
+
+        button {
+            padding: 10px 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            color: #fff;
+            font-weight: 600;
+        }
+
+        button.secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        button.danger {
+            background: linear-gradient(90deg, #e11d48, #dc2626);
+        }
+
+        button.small {
+            padding: 6px 10px;
+            font-size: 0.82rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .message {
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: var(--surface-3);
+            color: var(--muted);
+            min-height: 48px;
+            font-size: 0.9rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        th {
+            color: var(--muted);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-top: 18px;
+        }
+
+        .inline {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .inline input { flex: 1; }
+
+        @media (max-width: 980px) {
+            .grid, .two-col, .row { grid-template-columns: 1fr; }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TechMart Dashboard</h1>
+            <span class="status-pill">API Ready</span>
+        </header>
+
+        <div class="grid">
+            <section class="card">
+                <h2>Authentication</h2>
+                <div class="row">
+                    <div>
+                        <h3>Register</h3>
+                        <div class="field">
+                            <label for="regUsername">Username</label>
+                            <input id="regUsername" value="alice">
+                        </div>
+                        <div class="field">
+                            <label for="regEmail">Email</label>
+                            <input id="regEmail" value="alice@example.com">
+                        </div>
+                        <div class="field">
+                            <label for="regPassword">Password</label>
+                            <input id="regPassword" type="password" value="1234">
+                        </div>
+                        <button onclick="registerUser()">Register User</button>
+                    </div>
+                    <div>
+                        <h3>Login</h3>
+                        <div class="field">
+                            <label for="loginEmail">Email</label>
+                            <input id="loginEmail" value="alice@example.com">
+                        </div>
+                        <div class="field">
+                            <label for="loginPassword">Password</label>
+                            <input id="loginPassword" type="password" value="1234">
+                        </div>
+                        <div class="actions">
+                            <button onclick="loginUser()">Login</button>
+                            <button class="secondary" onclick="logoutUser()">Logout</button>
+                            <button class="secondary" onclick="loadMe()">Who Am I</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="authMessage" class="message">Ready to manage users.</div>
+            </section>
+
+            <section class="card">
+                <h2>Quick Checkout</h2>
+                <div class="row">
+                    <div class="field">
+                        <label for="checkoutProduct">Product</label>
+                        <select id="checkoutProduct"></select>
+                    </div>
+                    <div class="field">
+                        <label for="checkoutQty">Quantity</label>
+                        <input id="checkoutQty" type="number" value="1" min="1">
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="checkoutEmail">Customer Email</label>
+                    <input id="checkoutEmail" value="customer@example.com">
+                </div>
+                <div class="actions">
+                    <button onclick="addToCart()">Add To Cart</button>
+                    <button class="secondary" onclick="clearCart()">Clear Cart</button>
+                    <button onclick="submitCheckout()">Place Order</button>
+                </div>
+                <div id="checkoutMessage" class="message">No checkout run yet.</div>
+            </section>
+        </div>
+
+        <div class="two-col">
+            <section class="card">
+                <h2>Products</h2>
+                <div class="row">
+                    <div class="field">
+                        <label for="productId">ID</label>
+                        <input id="productId" value="PROD_010">
+                    </div>
+                    <div class="field">
+                        <label for="productName">Name</label>
+                        <input id="productName" value="Wireless Mouse">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field">
+                        <label for="productPrice">Price</label>
+                        <input id="productPrice" type="number" step="0.01" value="29.99">
+                    </div>
+                    <div class="field">
+                        <label for="productStock">Stock</label>
+                        <input id="productStock" type="number" value="50">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button onclick="createProduct()">Create Product</button>
+                    <button class="secondary" onclick="loadProducts()">Refresh Products</button>
+                </div>
+                <div id="productMessage" class="message">Loading products...</div>
+                <div style="overflow:auto; margin-top:12px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Orders</h2>
+                <div class="inline">
+                    <input id="orderEmailFilter" placeholder="Filter by customer email">
+                    <button class="secondary" onclick="loadOrders()">Filter</button>
+                    <button onclick="loadOrders()">Load All</button>
+                </div>
+                <div id="orderMessage" class="message">Loading orders...</div>
+                <div style="overflow:auto; margin-top:12px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Product</th>
+                                <th>Qty</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const basePath = (() => {
+            const full = window.location.pathname;
+            if (full.endsWith('/index.html')) {
+                return full.slice(0, -'/index.html'.length);
+            }
+            if (full.endsWith('/')) {
+                return full.slice(0, -1);
+            }
+            const lastSlash = full.lastIndexOf('/');
+            if (lastSlash > 0 && full.substring(lastSlash + 1).includes('.')) {
+                return full.substring(0, lastSlash);
+            }
+            return full;
+        })();
+
+        function api(path) {
+            return `${basePath}${path}`;
+        }
+
+        function setMessage(id, text, isError = false) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.color = isError ? '#fca5a5' : '#cbd5e1';
+            el.textContent = text;
+        }
+
+        function parseJson(response) {
+            return response.text().then(text => {
+                try { return text ? JSON.parse(text) : {}; } catch (e) { return {}; }
+            });
+        }
+
+        async function registerUser() {
+            const data = new URLSearchParams();
+            data.append('username', document.getElementById('regUsername').value);
+            data.append('email', document.getElementById('regEmail').value);
+            data.append('password', document.getElementById('regPassword').value);
+
+            const response = await fetch(api('/api/auth/register'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: data.toString()
+            });
+            const result = await parseJson(response);
+            setMessage('authMessage', result.message || (response.ok ? 'Registered successfully' : 'Registration failed'), !response.ok);
+        }
+
+        async function loginUser() {
+            const data = new URLSearchParams();
+            data.append('email', document.getElementById('loginEmail').value);
+            data.append('password', document.getElementById('loginPassword').value);
+
+            const response = await fetch(api('/api/auth/login'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: data.toString()
+            });
+            const result = await parseJson(response);
+            setMessage('authMessage', result.message || (response.ok ? 'Login successful' : 'Login failed'), !response.ok);
+        }
+
+        async function logoutUser() {
+            const response = await fetch(api('/api/auth/logout'));
+            const result = await parseJson(response);
+            setMessage('authMessage', result.message || 'Logged out', !response.ok);
+        }
+
+        async function loadMe() {
+            const response = await fetch(api('/api/auth/me'));
+            const result = await parseJson(response);
+            if (result.success && result.user) {
+                setMessage('authMessage', `Logged in as ${result.user.username} (${result.user.email})`);
+            } else {
+                setMessage('authMessage', result.message || 'No active session', true);
+            }
+        }
+
+        async function loadProducts() {
+            const response = await fetch(api('/api/products'));
+            const products = await response.json();
+            const tbody = document.getElementById('productTableBody');
+            tbody.innerHTML = '';
+            products.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${product.id}</td>
+                    <td>${product.name}</td>
+                    <td>${product.price}</td>
+                    <td>${product.stock}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="small secondary" onclick="prefillProduct('${product.id}', '${product.name}', '${product.price}', '${product.stock}')">Edit</button>
+                            <button class="small danger" onclick="deleteProduct('${product.id}')">Delete</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            setMessage('productMessage', products.length ? `Loaded ${products.length} product(s)` : 'No products found');
+            populateProductSelect(products);
+        }
+
+        function prefillProduct(id, name, price, stock) {
+            document.getElementById('productId').value = id;
+            document.getElementById('productName').value = name;
+            document.getElementById('productPrice').value = price;
+            document.getElementById('productStock').value = stock;
+        }
+
+        function populateProductSelect(products) {
+            const select = document.getElementById('checkoutProduct');
+            select.innerHTML = '';
+            products.forEach(product => {
+                const opt = document.createElement('option');
+                opt.value = product.id;
+                opt.textContent = `${product.name} (${product.stock} in stock)`;
+                select.appendChild(opt);
+            });
+        }
+
+        async function createProduct() {
+            const data = new URLSearchParams();
+            data.append('id', document.getElementById('productId').value);
+            data.append('name', document.getElementById('productName').value);
+            data.append('price', document.getElementById('productPrice').value);
+            data.append('stock', document.getElementById('productStock').value);
+
+            const response = await fetch(api('/api/products'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: data.toString()
+            });
+            const result = await parseJson(response);
+            if (response.ok) {
+                await loadProducts();
+            }
+            setMessage('productMessage', result.message || (response.ok ? 'Product created' : 'Product creation failed'), !response.ok);
+        }
+
+        async function deleteProduct(id) {
+            const response = await fetch(api(`/api/products/${id}`), { method: 'DELETE' });
+            const result = await parseJson(response);
+            if (response.ok) {
+                await loadProducts();
+            }
+            setMessage('productMessage', result.message || 'Delete action completed', !response.ok);
+        }
+
+        async function loadOrders() {
+            const email = document.getElementById('orderEmailFilter').value.trim();
+            const url = email ? `${api('/api/orders')}?email=${encodeURIComponent(email)}` : api('/api/orders');
+            const response = await fetch(url);
+            const orders = await response.json();
+            const tbody = document.getElementById('orderTableBody');
+            tbody.innerHTML = '';
+            orders.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.productId}</td>
+                    <td>${order.quantity}</td>
+                    <td>${order.customerEmail}</td>
+                    <td>${order.status}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="small secondary" onclick="updateOrderStatus('${order.id}', 'PENDING')">Pending</button>
+                            <button class="small secondary" onclick="updateOrderStatus('${order.id}', 'SHIPPED')">Shipped</button>
+                            <button class="small danger" onclick="deleteOrder('${order.id}')">Delete</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            setMessage('orderMessage', orders.length ? `Loaded ${orders.length} order(s)` : 'No orders found');
+        }
+
+        async function updateOrderStatus(id, status) {
+            const response = await fetch(api(`/api/orders/${id}`), {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `status=${encodeURIComponent(status)}`
+            });
+            const result = await parseJson(response);
+            if (response.ok) {
+                await loadOrders();
+            }
+            setMessage('orderMessage', result.message || (response.ok ? 'Order updated' : 'Failed to update order'), !response.ok);
+        }
+
+        async function deleteOrder(id) {
+            const response = await fetch(api(`/api/orders/${id}`), { method: 'DELETE' });
+            const result = await parseJson(response);
+            if (response.ok) {
+                await loadOrders();
+            }
+            setMessage('orderMessage', result.message || 'Delete action completed', !response.ok);
+        }
+
+        async function addToCart() {
+            const data = new URLSearchParams();
+            data.append('action', 'add');
+            data.append('id', document.getElementById('checkoutProduct').value);
+            data.append('qty', document.getElementById('checkoutQty').value);
+            data.append('email', document.getElementById('checkoutEmail').value);
+
+            const response = await fetch(api('/api/checkout') + '?' + data.toString());
+            const result = await parseJson(response);
+            setMessage('checkoutMessage', result.message || 'Added to cart', !response.ok);
+        }
+
+        async function clearCart() {
+            const response = await fetch(api('/api/checkout?action=clear'));
+            const result = await parseJson(response);
+            setMessage('checkoutMessage', result.message || 'Cart cleared', !response.ok);
+        }
+
+        async function submitCheckout() {
+            const data = new URLSearchParams();
+            data.append('id', document.getElementById('checkoutProduct').value);
+            data.append('qty', document.getElementById('checkoutQty').value);
+            data.append('email', document.getElementById('checkoutEmail').value);
+
+            const response = await fetch(api('/api/checkout') + '?' + data.toString());
+            const result = await parseJson(response);
+            if (response.ok && result.success) {
+                setMessage('checkoutMessage', `Order placed: ${result.orderId}`);
+                await loadOrders();
+            } else {
+                setMessage('checkoutMessage', result.status || result.message || 'Checkout failed', true);
+            }
+        }
+
+        loadProducts();
+        loadOrders();
+    </script>
+</body>
+</html>
+
+
+
+
