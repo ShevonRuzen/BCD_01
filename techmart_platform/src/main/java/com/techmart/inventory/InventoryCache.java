@@ -50,17 +50,14 @@ public class InventoryCache {
         }
         return stockLevels.getOrDefault(productId, 0);
     }
-
     @Lock(LockType.WRITE)
     public boolean decrementStock(String productId, int quantity) {
         if (productId == null || productId.isBlank() || quantity <= 0) {
             return false;
         }
-
         if (!stockLevels.containsKey(productId)) {
             syncFromDatabase(productId);
         }
-
         int currentStock = stockLevels.getOrDefault(productId, 0);
         boolean success = (currentStock >= quantity);
         if (success) {
@@ -71,7 +68,6 @@ public class InventoryCache {
         }
         return success;
     }
-
     @Lock(LockType.WRITE)
     public void setStock(String productId, int stock) {
         if (productId == null || productId.isBlank() || stock < 0) {

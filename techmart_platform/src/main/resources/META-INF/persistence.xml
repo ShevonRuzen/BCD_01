@@ -16,26 +16,21 @@
             <!-- EclipseLink SQL logging for diagnosing update failures -->
             <property name="eclipselink.logging.level.sql" value="FINE"/>
             <property name="eclipselink.logging.parameters" value="true"/>
-
             <!-- Connection Pool Tuning -->
             <property name="eclipselink.connection-pool.default.initial" value="10"/>
             <property name="eclipselink.connection-pool.default.min" value="10"/>
             <property name="eclipselink.connection-pool.default.max" value="50"/>
-            
             <!-- Batch Writing -->
             <property name="eclipselink.jdbc.batch-writing" value="JDBC"/>
             <property name="eclipselink.jdbc.batch-writing.size" value="100"/>
-            
             <!-- Cache Tuning -->
             <property name="eclipselink.cache.shared.default" value="true"/>
             <property name="eclipselink.cache.size.default" value="10000"/>
             <property name="eclipselink.cache.type.default" value="SoftWeak"/>
-            
             <!-- Query Tuning -->
             <property name="eclipselink.query-results-cache" value="true"/>
             <property name="eclipselink.jdbc.cache-statements" value="true"/>
             <property name="eclipselink.jdbc.cache-statements.size" value="50"/>
-            
             <!-- Optimization -->
             <property name="eclipselink.weaving" value="static"/>
             <property name="eclipselink.logging.level" value="WARNING"/>

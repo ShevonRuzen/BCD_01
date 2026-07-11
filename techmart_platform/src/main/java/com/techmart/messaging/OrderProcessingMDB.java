@@ -47,14 +47,12 @@ public class OrderProcessingMDB implements MessageListener {
             if (message instanceof TextMessage) {
                 String orderPayload = ((TextMessage) message).getText();
                 LOGGER.info("MDB received incoming queue message: " + orderPayload);
-
                 // Parse JSON payload
                 JsonObject json = Json.createReader(new StringReader(orderPayload)).readObject();
                 String orderId = json.getString("orderId");
                 String productId = json.getString("productId");
                 int quantity = json.getInt("quantity");
                 String email = json.getString("email");
-
                 // 1. Update Product stock
                 Product product = em.find(Product.class, productId);
                 if (product != null) {
@@ -64,19 +62,15 @@ public class OrderProcessingMDB implements MessageListener {
                 } else {
                     LOGGER.warning("MDB could not find product " + productId + " in DB.");
                 }
-
                 // 2. Persist new Order
                 Order order = new Order(orderId, productId, quantity, email, "PROCESSED", LocalDateTime.now());
                 em.persist(order);
                 LOGGER.info("MDB persisted order " + orderId + " to DB.");
-
                 // 3. Measure DB duration
                 double dbDurationMs = (System.nanoTime() - dbStart) / 1_000_000.0;
                 metricsCollector.recordDbPersistence(dbDurationMs);
-
                 // 4. Async notification
                 notificationEngine.sendEmailConfirmation(email, orderId);
-
                 // 5. JMS notifications
                 notificationProducer.sendNotification(
                     "New Order Placed",

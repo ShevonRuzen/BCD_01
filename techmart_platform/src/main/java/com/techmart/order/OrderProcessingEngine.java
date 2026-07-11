@@ -37,16 +37,13 @@ public class OrderProcessingEngine {
         singleItemCart.put(productId, quantity);
         return processCartCheckout(singleItemCart, customerEmail);
     }
-
     public OrderResult processCartCheckout(Map<String, Integer> cart, String customerEmail) {
         long startTime = System.nanoTime();
-
         if (cart == null || cart.isEmpty() || customerEmail == null || customerEmail.isBlank()) {
             double duration = calculateDuration(startTime);
             metricsCollector.recordCheckout(false, duration);
             return new OrderResult(false, null, "INVALID_CHECKOUT", duration);
         }
-
         Map<String, Product> productsById = new LinkedHashMap<>();
         for (Map.Entry<String, Integer> entry : cart.entrySet()) {
             String productId = entry.getKey();
@@ -56,7 +53,6 @@ public class OrderProcessingEngine {
                 metricsCollector.recordCheckout(false, duration);
                 return new OrderResult(false, null, "INVALID_CHECKOUT", duration);
             }
-
             Product product = em.find(Product.class, productId);
             if (product == null) {
                 double duration = calculateDuration(startTime);
@@ -64,14 +60,12 @@ public class OrderProcessingEngine {
                 LOGGER.warning("Checkout failed: Product " + productId + " not found.");
                 return new OrderResult(false, null, "PRODUCT_NOT_FOUND", duration);
             }
-
             if (product.getStock() < quantity) {
                 double duration = calculateDuration(startTime);
                 metricsCollector.recordCheckout(false, duration);
                 LOGGER.warning("Checkout failed: Product " + productId + " out of stock.");
                 return new OrderResult(false, null, "OUT_OF_STOCK", duration);
             }
-
             productsById.put(productId, product);
         }
 

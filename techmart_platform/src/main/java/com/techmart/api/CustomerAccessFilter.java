@@ -40,7 +40,6 @@ public class CustomerAccessFilter implements Filter {
             httpResp.sendRedirect(contextPath + "/login.html");
             return;
         }
-
         if (!"CUSTOMER".equals(role)) {
             // Logged in but not a customer — redirect to login page.
             // This prevents the tab from suddenly loading the admin dashboard.
@@ -48,7 +47,6 @@ public class CustomerAccessFilter implements Filter {
             httpResp.sendRedirect(contextPath + "/login.html");
             return;
         }
-
         // Is customer — allow through
         chain.doFilter(request, response);
     }
