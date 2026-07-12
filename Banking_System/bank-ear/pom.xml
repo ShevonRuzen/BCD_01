@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.bank</groupId>
+        <artifactId>bank-parent</artifactId>
+        <version>1.0</version>
+    </parent>
+
+    <artifactId>bank-ear</artifactId>
+    <packaging>ear</packaging>
+
+    <name>Bank EAR Module</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.bank</groupId>
+            <artifactId>bank-core</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.bank</groupId>
+            <artifactId>bank-ejb</artifactId>
+            <version>1.0</version>
+            <type>ejb</type>
+        </dependency>
+        <dependency>
+            <groupId>com.bank</groupId>
+            <artifactId>bank-web</artifactId>
+            <version>1.0</version>
+            <type>war</type>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>bank</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-ear-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <version>8</version>
+                    <defaultLibBundleDir>lib</defaultLibBundleDir>
+                    <modules>
+                        <webModule>
+                            <groupId>com.bank</groupId>
+                            <artifactId>bank-web</artifactId>
+                            <contextRoot>/bank</contextRoot>
+                        </webModule>
+                        <ejbModule>
+                            <groupId>com.bank</groupId>
+                            <artifactId>bank-ejb</artifactId>
+                        </ejbModule>
+                        <jarModule>
+                            <groupId>com.bank</groupId>
+                            <artifactId>bank-core</artifactId>
+                        </jarModule>
+                    </modules>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

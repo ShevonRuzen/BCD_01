@@ -1,0 +1,4 @@
+- `[/]` Core & EJB updates (Add 2.45% fee deductions to transfers/approvals and self-deposit logging)
+- `[ ]` Web Servlets updates (Fetch separate history datasets in DashboardServlet)
+- `[ ]` JSP UI layout overhauls (Dashboard sidebar header, unified feeds, and deposit history tables)
+- `[ ]` End-to-end local build check

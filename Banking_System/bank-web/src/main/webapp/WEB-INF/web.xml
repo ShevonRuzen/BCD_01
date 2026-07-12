@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <!-- Filters Definitions -->
+    <filter>
+        <filter-name>AuthenticationFilter</filter-name>
+        <filter-class>com.bank.web.filter.AuthenticationFilter</filter-class>
+    </filter>
+    
+    <filter>
+        <filter-name>RoleAuthorizationFilter</filter-name>
+        <filter-class>com.bank.web.filter.RoleAuthorizationFilter</filter-class>
+    </filter>
+
+    <!-- Filter Mappings: Authentication must run first -->
+    <filter-mapping>
+        <filter-name>AuthenticationFilter</filter-name>
+        <url-pattern>/dashboard</url-pattern>
+        <url-pattern>/admin/*</url-pattern>
+        <url-pattern>/transfer</url-pattern>
+        <url-pattern>/transfer/schedule</url-pattern>
+        <url-pattern>/logout</url-pattern>
+        <url-pattern>/user/*</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>RoleAuthorizationFilter</filter-name>
+        <url-pattern>/dashboard</url-pattern>
+        <url-pattern>/admin/*</url-pattern>
+        <url-pattern>/transfer</url-pattern>
+        <url-pattern>/transfer/schedule</url-pattern>
+        <url-pattern>/user/*</url-pattern>
+    </filter-mapping>
+
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+</web-app>

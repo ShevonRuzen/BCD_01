@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0"
+             xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+
+    <persistence-unit name="BankPU" transaction-type="JTA">
+        <jta-data-source>jdbc/BankPool</jta-data-source>
+        <class>com.bank.core.entity.User</class>
+        <class>com.bank.core.entity.Account</class>
+        <class>com.bank.core.entity.Transfer</class>
+        <class>com.bank.core.entity.AuditLog</class>
+        <class>com.bank.core.entity.MoneyRequest</class>
+        <properties>
+            <!-- Standard Jakarta EE approach (creates tables if they don't exist, but doesn't update them safely) -->
+            <!-- <property name="jakarta.persistence.schema-generation.database.action" value="create"/> -->
+            
+            <!-- EclipseLink specific properties for Payara to auto-create and update tables -->
+            <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
+            <property name="eclipselink.ddl-generation.output-mode" value="database"/>
+            <property name="eclipselink.logging.level" value="FINE"/>
+        </properties>
+    </persistence-unit>
+</persistence>

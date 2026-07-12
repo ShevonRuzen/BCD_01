@@ -1,0 +1,9 @@
+com\bank\ejb\service\UserSessionBean.class
+com\bank\ejb\security\SecurityInterceptor.class
+com\bank\ejb\messaging\NotificationTopicConfig.class
+com\bank\ejb\service\AuditLogSessionBean.class
+com\bank\ejb\service\NotificationService.class
+com\bank\ejb\security\SecurityAudit.class
+com\bank\ejb\service\TransferSessionBean.class
+com\bank\ejb\service\AccountSessionBean.class
+com\bank\ejb\service\MoneyRequestSessionBean.class
